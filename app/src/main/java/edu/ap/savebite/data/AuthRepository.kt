@@ -38,6 +38,12 @@ class AuthRepository(
 
     fun logout() = auth.signOut()
 
+    suspend fun sendPasswordReset(email: String) {
+        // Firebase uses its Dutch template for the mail
+        auth.setLanguageCode("nl")
+        auth.sendPasswordResetEmail(email).await()
+    }
+
     /** Reads the role from `users/{uid}`. */
     suspend fun getRole(uid: String): Role {
         val value = firestore.collection("users").document(uid).get().await().getString("role")

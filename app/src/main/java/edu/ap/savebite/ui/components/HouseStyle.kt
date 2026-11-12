@@ -12,20 +12,31 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import edu.ap.savebite.R
 import edu.ap.savebite.ui.theme.ErrorBackground
 import edu.ap.savebite.ui.theme.ErrorText
 import edu.ap.savebite.ui.theme.Ink
@@ -80,8 +91,10 @@ fun SaveBiteTextField(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    isPassword: Boolean = false
 ) {
+    // Only the screen state, so it lives here and not in the ViewModel
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
     Column(modifier) {
         Text(label, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(bottom = 6.dp))
         OutlinedTextField(
@@ -90,7 +103,30 @@ fun SaveBiteTextField(
             placeholder = { Text(placeholder) },
             singleLine = true,
             keyboardOptions = keyboardOptions,
-            visualTransformation = visualTransformation,
+            visualTransformation = if (isPassword && !passwordVisible) {
+                PasswordVisualTransformation()
+            } else {
+                VisualTransformation.None
+            },
+            trailingIcon = if (isPassword) {
+                {
+                    // Not focusable, so "Next" on the keyboard skips it and goes to the next field
+                    IconButton(
+                        onClick = { passwordVisible = !passwordVisible },
+                        modifier = Modifier.focusProperties { canFocus = false }
+                    ) {
+                        Icon(
+                            painterResource(if (passwordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
+                            contentDescription = stringResource(
+                                if (passwordVisible) R.string.hide_password else R.string.show_password
+                            ),
+                            tint = Ink
+                        )
+                    }
+                }
+            } else {
+                null
+            },
             shape = MaterialTheme.shapes.small,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
@@ -101,6 +137,21 @@ fun SaveBiteTextField(
             modifier = Modifier.fillMaxWidth()
         )
     }
+}
+
+/** Neutral confirmation box below a form. */
+@Composable
+fun InfoMessage(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        color = Ink,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.White, MaterialTheme.shapes.small)
+            .border(2.dp, Ink, MaterialTheme.shapes.small)
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    )
 }
 
 /** Red error box below a form. */

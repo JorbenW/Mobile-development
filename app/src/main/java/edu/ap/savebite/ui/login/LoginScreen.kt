@@ -34,7 +34,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -42,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.ap.savebite.R
 import edu.ap.savebite.ui.components.ErrorMessage
+import edu.ap.savebite.ui.components.InfoMessage
 import edu.ap.savebite.ui.components.SaveBiteButton
 import edu.ap.savebite.ui.components.SaveBiteTextField
 import edu.ap.savebite.ui.theme.Cream
@@ -91,16 +91,24 @@ fun LoginScreen(
             value = uiState.password,
             onValueChange = viewModel::onPasswordChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-            visualTransformation = PasswordVisualTransformation()
+            isPassword = true
         )
 
         uiState.errorMessage?.let { ErrorMessage(stringResource(it)) }
+        uiState.resetSentTo?.let { InfoMessage(stringResource(R.string.reset_sent, it)) }
 
         SaveBiteButton(
             text = stringResource(R.string.screen_login),
             onClick = viewModel::login,
             isLoading = uiState.isLoading
         )
+        TextButton(
+            onClick = viewModel::forgotPassword,
+            enabled = !uiState.isLoading,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text(stringResource(R.string.forgot_password), color = Ink)
+        }
 
         Spacer(Modifier.height(24.dp))
         TextButton(onClick = onRegisterClick, modifier = Modifier.align(Alignment.CenterHorizontally)) {

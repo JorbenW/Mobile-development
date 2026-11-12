@@ -10,6 +10,7 @@ import edu.ap.savebite.R
 import edu.ap.savebite.SaveBiteApplication
 import edu.ap.savebite.data.AuthRepository
 import edu.ap.savebite.data.Role
+import edu.ap.savebite.ui.authErrorMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ data class RegisterUiState(
     val name: String = "",
     val email: String = "",
     val password: String = "",
+    val passwordConfirm: String = "",
     val role: Role = Role.CUSTOMER,
     val isLoading: Boolean = false,
     @StringRes val errorMessage: Int? = null,
@@ -34,6 +36,8 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
     fun onNameChange(name: String) = _uiState.update { it.copy(name = name, errorMessage = null) }
     fun onEmailChange(email: String) = _uiState.update { it.copy(email = email, errorMessage = null) }
     fun onPasswordChange(password: String) = _uiState.update { it.copy(password = password, errorMessage = null) }
+    fun onPasswordConfirmChange(password: String) =
+        _uiState.update { it.copy(passwordConfirm = password, errorMessage = null) }
     fun onRoleChange(role: Role) = _uiState.update { it.copy(role = role) }
 
     fun register() {
@@ -43,6 +47,7 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
             state.email.isBlank() -> R.string.error_email_empty
             // Firebase Auth refuses shorter passwords
             state.password.length < 6 -> R.string.error_password_short
+            state.password != state.passwordConfirm -> R.string.error_password_mismatch
             else -> null
         }
         if (error != null) {
@@ -56,8 +61,8 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
                 authRepository.register(state.name.trim(), state.email.trim(), state.password, state.role)
                 _uiState.update { it.copy(isLoading = false, registeredRole = state.role) }
             } catch (e: Exception) {
-                // shortcut: one generic message, specific messages per error come in step 7 (A3)
-                _uiState.update { it.copy(isLoading = false, errorMessage = R.string.error_register_failed) }
+                val message = authErrorMessage(e, fallback = R.string.error_register_failed)
+                _uiState.update { it.copy(isLoading = false, errorMessage = message) }
             }
         }
     }

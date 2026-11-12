@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import edu.ap.savebite.R
 import edu.ap.savebite.SaveBiteApplication
 import edu.ap.savebite.data.AuthRepository
+import edu.ap.savebite.ui.authErrorMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,8 @@ data class LoginUiState(
     val password: String = "",
     val isLoading: Boolean = false,
     @StringRes val errorMessage: Int? = null,
+    /** E-mail address the reset mail was sent to, shown as confirmation (A4). */
+    val resetSentTo: String? = null,
     /** True after a successful login; the screen then navigates. */
     val isLoggedIn: Boolean = false
 )
@@ -28,8 +31,11 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    fun onEmailChange(email: String) = _uiState.update { it.copy(email = email, errorMessage = null) }
-    fun onPasswordChange(password: String) = _uiState.update { it.copy(password = password, errorMessage = null) }
+    fun onEmailChange(email: String) =
+        _uiState.update { it.copy(email = email, errorMessage = null, resetSentTo = null) }
+
+    fun onPasswordChange(password: String) =
+        _uiState.update { it.copy(password = password, errorMessage = null) }
 
     fun login() {
         val state = _uiState.value
@@ -39,18 +45,38 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
             else -> null
         }
         if (error != null) {
-            _uiState.update { it.copy(errorMessage = error) }
+            _uiState.update { it.copy(errorMessage = error, resetSentTo = null) }
             return
         }
 
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, errorMessage = null, resetSentTo = null) }
         viewModelScope.launch {
             try {
                 authRepository.login(state.email.trim(), state.password)
                 _uiState.update { it.copy(isLoading = false, isLoggedIn = true) }
             } catch (e: Exception) {
-                // shortcut: one generic message, specific messages per error come in step 7 (A3)
-                _uiState.update { it.copy(isLoading = false, errorMessage = R.string.error_login_failed) }
+                val message = authErrorMessage(e, fallback = R.string.error_login_failed)
+                _uiState.update { it.copy(isLoading = false, errorMessage = message) }
+            }
+        }
+    }
+
+    /** Sends a reset mail to the e-mail in the field (A4). */
+    fun forgotPassword() {
+        val email = _uiState.value.email.trim()
+        if (email.isEmpty()) {
+            _uiState.update { it.copy(errorMessage = R.string.error_email_empty, resetSentTo = null) }
+            return
+        }
+
+        _uiState.update { it.copy(isLoading = true, errorMessage = null, resetSentTo = null) }
+        viewModelScope.launch {
+            try {
+                authRepository.sendPasswordReset(email)
+                _uiState.update { it.copy(isLoading = false, resetSentTo = email) }
+            } catch (e: Exception) {
+                val message = authErrorMessage(e, fallback = R.string.error_reset_failed)
+                _uiState.update { it.copy(isLoading = false, errorMessage = message) }
             }
         }
     }

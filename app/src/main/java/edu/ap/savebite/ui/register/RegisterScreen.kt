@@ -27,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -84,8 +83,15 @@ fun RegisterScreen(
             value = uiState.password,
             onValueChange = viewModel::onPasswordChange,
             placeholder = stringResource(R.string.placeholder_password),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+            isPassword = true
+        )
+        SaveBiteTextField(
+            label = stringResource(R.string.label_password_confirm),
+            value = uiState.passwordConfirm,
+            onValueChange = viewModel::onPasswordConfirmChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-            visualTransformation = PasswordVisualTransformation()
+            isPassword = true
         )
 
         Text(stringResource(R.string.label_role), style = MaterialTheme.typography.labelMedium)
