@@ -27,7 +27,12 @@ class AuthRepository(
                 .await()
         } catch (e: Exception) {
             // Without a profile the account has no role, so remove it and let the user retry
-            user.delete().await()
+            try {
+                user.delete().await()
+            } catch (_: Exception) {
+                // Delete failed too: at least do not stay signed in without a role
+                auth.signOut()
+            }
             throw e
         }
     }

@@ -2,10 +2,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Profile of a user: anyone signed in can read it, only the owner writes it.
+    // Profile of a user: only the owner reads and writes it,
+    // so nobody can list the names and e-mails of other users.
     // The role is chosen once at registration and can never change.
     match /users/{uid} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null && request.auth.uid == uid;
       allow create: if request.auth != null && request.auth.uid == uid
                     && request.resource.data.role in ['customer', 'merchant'];
       allow update: if request.auth != null && request.auth.uid == uid

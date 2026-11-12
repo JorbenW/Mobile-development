@@ -50,7 +50,7 @@
     <string name="error_email_invalid">Dit is geen geldig e-mailadres.</string>
     <string name="error_no_internet">Geen internet. Controleer je verbinding en probeer opnieuw.</string>
     <string name="error_reset_failed">De mail kon niet verstuurd worden. Probeer het opnieuw.</string>
-    <string name="error_start_failed">Je gegevens konden niet geladen worden. Controleer je internet.</string>
+    <string name="error_start_failed">Je gegevens konden niet geladen worden. Probeer opnieuw of log uit.</string>
     <string name="error_register_failed">Registreren is mislukt. Probeer het opnieuw.</string>
 
 </resources>

@@ -12,6 +12,7 @@ import edu.ap.savebite.data.AuthRepository
 import edu.ap.savebite.data.Role
 import edu.ap.savebite.data.StoreRepository
 import edu.ap.savebite.ui.SaveBiteScreen
+import edu.ap.savebite.ui.authErrorMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,7 +52,7 @@ class StartViewModel(
                 }
                 _uiState.value = StartUiState(destination = destination)
             } catch (e: Exception) {
-                _uiState.value = StartUiState(errorMessage = R.string.error_start_failed)
+                _uiState.value = StartUiState(errorMessage = authErrorMessage(e, fallback = R.string.error_start_failed))
             }
         }
     }
