@@ -45,6 +45,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import edu.ap.savebite.R
+import edu.ap.savebite.data.Role
+import edu.ap.savebite.ui.register.RegisterScreen
 import edu.ap.savebite.ui.theme.Cream
 import edu.ap.savebite.ui.theme.Ink
 import edu.ap.savebite.ui.theme.Mustard
@@ -125,7 +127,17 @@ fun SaveBiteApp(navController: NavHostController = rememberNavController()) {
                     }
                 }
             }
-            (SaveBiteScreen.entries - SaveBiteScreen.Login).forEach { screen ->
+            composable(SaveBiteScreen.Register.name) {
+                RegisterScreen(
+                    onBack = { navController.navigateUp() },
+                    onRegistered = { role ->
+                        navController.goToHome(
+                            if (role == Role.CUSTOMER) SaveBiteScreen.Discover else SaveBiteScreen.MyStore
+                        )
+                    }
+                )
+            }
+            (SaveBiteScreen.entries - SaveBiteScreen.Login - SaveBiteScreen.Register).forEach { screen ->
                 composable(screen.name) { PlaceholderScreen(screen) }
             }
         }

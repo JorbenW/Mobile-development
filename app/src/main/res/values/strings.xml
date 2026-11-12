@@ -11,6 +11,27 @@
     <string name="screen_my_store">Mijn winkel</string>
 
     <string name="logout">Uitloggen</string>
+    <string name="back">← Terug</string>
+
+    <!-- Register -->
+    <string name="register_title">Maak een account</string>
+    <string name="label_name">Naam</string>
+    <string name="label_email">E-mail</string>
+    <string name="label_password">Wachtwoord</string>
+    <string name="label_role">Ik ben een…</string>
+    <string name="placeholder_name">Voor- en achternaam</string>
+    <string name="placeholder_email">naam@voorbeeld.be</string>
+    <string name="placeholder_password">Minstens 6 tekens</string>
+    <string name="role_customer">Klant</string>
+    <string name="role_customer_hint">Ik zoek pakketten</string>
+    <string name="role_merchant">Handelaar</string>
+    <string name="role_merchant_hint">Ik bied pakketten aan</string>
+
+    <!-- Errors -->
+    <string name="error_name_empty">Vul je naam in.</string>
+    <string name="error_email_empty">Vul je e-mailadres in.</string>
+    <string name="error_password_short">Je wachtwoord moet minstens 6 tekens hebben.</string>
+    <string name="error_register_failed">Registreren is mislukt. Probeer het opnieuw.</string>
 
     <!-- Temporary until real login (step 6) -->
     <string name="demo_customer">Demo: klant</string>
