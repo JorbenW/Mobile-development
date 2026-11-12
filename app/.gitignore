@@ -1,0 +1,3 @@
+/build
+# Contains the Firebase API key; share it outside Git
+google-services.json
