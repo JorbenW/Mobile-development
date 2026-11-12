@@ -11,5 +11,11 @@ service cloud.firestore {
       allow update: if request.auth != null && request.auth.uid == uid
                     && request.resource.data.role == resource.data.role;
     }
+
+    // Store of a merchant, at stores/{uid} (ADR 0004).
+    // Write rules come with Mijn winkel (H1).
+    match /stores/{uid} {
+      allow read: if request.auth != null;
+    }
   }
 }

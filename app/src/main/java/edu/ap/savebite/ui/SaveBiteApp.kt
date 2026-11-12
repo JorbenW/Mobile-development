@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -46,12 +46,15 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import edu.ap.savebite.R
 import edu.ap.savebite.data.Role
+import edu.ap.savebite.ui.login.LoginScreen
 import edu.ap.savebite.ui.register.RegisterScreen
+import edu.ap.savebite.ui.start.StartScreen
 import edu.ap.savebite.ui.theme.Cream
 import edu.ap.savebite.ui.theme.Ink
 import edu.ap.savebite.ui.theme.Mustard
 
 enum class SaveBiteScreen(@StringRes val title: Int, val icon: ImageVector? = null) {
+    Start(R.string.app_name),
     Login(R.string.screen_login),
     Register(R.string.screen_register),
     Discover(R.string.screen_discover, Icons.Filled.Search),
@@ -68,10 +71,13 @@ private val customerTabs = listOf(
 private val merchantTabs = listOf(SaveBiteScreen.MyBags, SaveBiteScreen.MyStore)
 
 @Composable
-fun SaveBiteApp(navController: NavHostController = rememberNavController()) {
+fun SaveBiteApp(
+    navController: NavHostController = rememberNavController(),
+    appViewModel: AppViewModel = viewModel(factory = AppViewModel.Factory)
+) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val current = SaveBiteScreen.valueOf(
-        backStackEntry?.destination?.route ?: SaveBiteScreen.Login.name
+        backStackEntry?.destination?.route ?: SaveBiteScreen.Start.name
     )
     val tabs = when (current) {
         in customerTabs -> customerTabs
@@ -85,10 +91,8 @@ fun SaveBiteApp(navController: NavHostController = rememberNavController()) {
                 SaveBiteTopBar(
                     title = stringResource(current.title),
                     onLogout = {
-                        // Clear the whole back stack so Back cannot return to the app
-                        navController.navigate(SaveBiteScreen.Login.name) {
-                            popUpTo(navController.graph.id) { inclusive = true }
-                        }
+                        appViewModel.logout()
+                        navController.navigateAndClear(SaveBiteScreen.Login)
                     }
                 )
             }
@@ -110,44 +114,42 @@ fun SaveBiteApp(navController: NavHostController = rememberNavController()) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = SaveBiteScreen.Login.name,
+            startDestination = SaveBiteScreen.Start.name,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(SaveBiteScreen.Start.name) {
+                StartScreen(onDestination = { navController.navigateAndClear(it) })
+            }
             composable(SaveBiteScreen.Login.name) {
-                // shortcut: demo buttons until real login in step 6
-                PlaceholderScreen(SaveBiteScreen.Login) {
-                    Button(onClick = { navController.goToHome(SaveBiteScreen.Discover) }) {
-                        Text(stringResource(R.string.demo_customer))
-                    }
-                    Button(onClick = { navController.goToHome(SaveBiteScreen.MyBags) }) {
-                        Text(stringResource(R.string.demo_merchant))
-                    }
-                    Button(onClick = { navController.navigate(SaveBiteScreen.Register.name) }) {
-                        Text(stringResource(R.string.screen_register))
-                    }
-                }
+                LoginScreen(
+                    // Start decides the home screen of the role
+                    onLoggedIn = { navController.navigateAndClear(SaveBiteScreen.Start) },
+                    onRegisterClick = { navController.navigate(SaveBiteScreen.Register.name) }
+                )
             }
             composable(SaveBiteScreen.Register.name) {
                 RegisterScreen(
                     onBack = { navController.navigateUp() },
+                    // A new merchant has no store yet, so goes to Mijn winkel
                     onRegistered = { role ->
-                        navController.goToHome(
+                        navController.navigateAndClear(
                             if (role == Role.CUSTOMER) SaveBiteScreen.Discover else SaveBiteScreen.MyStore
                         )
                     }
                 )
             }
-            (SaveBiteScreen.entries - SaveBiteScreen.Login - SaveBiteScreen.Register).forEach { screen ->
+            val formScreens = listOf(SaveBiteScreen.Start, SaveBiteScreen.Login, SaveBiteScreen.Register)
+            (SaveBiteScreen.entries - formScreens).forEach { screen ->
                 composable(screen.name) { PlaceholderScreen(screen) }
             }
         }
     }
 }
 
-/** Opens the start screen of a role and removes Login from the back stack. */
-private fun NavHostController.goToHome(home: SaveBiteScreen) {
-    navigate(home.name) {
-        popUpTo(SaveBiteScreen.Login.name) { inclusive = true }
+/** Opens [screen] and clears the back stack, so Back cannot return to the previous flow. */
+private fun NavHostController.navigateAndClear(screen: SaveBiteScreen) {
+    navigate(screen.name) {
+        popUpTo(graph.id) { inclusive = true }
     }
 }
 
@@ -205,16 +207,13 @@ private fun SaveBiteBottomBar(
 }
 
 @Composable
-fun PlaceholderScreen(
-    screen: SaveBiteScreen,
-    content: @Composable () -> Unit = {}
-) {
+// shortcut: placeholder until each screen is built in its own week
+fun PlaceholderScreen(screen: SaveBiteScreen) {
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(stringResource(screen.title), style = MaterialTheme.typography.headlineMedium)
-        content()
     }
 }

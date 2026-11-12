@@ -9,4 +9,5 @@ class AppContainer {
     private val firestore = FirebaseFirestore.getInstance()
 
     val authRepository = AuthRepository(auth, firestore)
+    val storeRepository = StoreRepository(firestore)
 }

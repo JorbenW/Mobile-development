@@ -14,6 +14,10 @@ class AuthRepository(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) {
+    /** The uid of the signed-in user, or null when nobody is signed in. */
+    val currentUid: String?
+        get() = auth.currentUser?.uid
+
     /** Creates the Auth account and the profile document `users/{uid}`. */
     suspend fun register(name: String, email: String, password: String, role: Role) {
         val user = auth.createUserWithEmailAndPassword(email, password).await().user!!
@@ -26,5 +30,17 @@ class AuthRepository(
             user.delete().await()
             throw e
         }
+    }
+
+    suspend fun login(email: String, password: String) {
+        auth.signInWithEmailAndPassword(email, password).await()
+    }
+
+    fun logout() = auth.signOut()
+
+    /** Reads the role from `users/{uid}`. */
+    suspend fun getRole(uid: String): Role {
+        val value = firestore.collection("users").document(uid).get().await().getString("role")
+        return Role.entries.first { it.value == value }
     }
 }
