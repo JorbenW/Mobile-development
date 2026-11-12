@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">SaveBite</string>
+
+    <string name="screen_login">Inloggen</string>
+    <string name="screen_register">Registreren</string>
+    <string name="screen_discover">Ontdekken</string>
+    <string name="screen_map">Kaart</string>
+    <string name="screen_orders">Bestellingen</string>
+    <string name="screen_favorites">Favorieten</string>
+    <string name="screen_my_bags">Mijn pakketten</string>
+    <string name="screen_my_store">Mijn winkel</string>
+
+    <string name="logout">Uitloggen</string>
+    <string name="back">← Terug</string>
+
+    <string name="retry">Opnieuw proberen</string>
+
+    <!-- Login -->
+    <string name="tagline">Overschotten redden, vlak bij jou.</string>
+    <string name="no_account">Nog geen account?</string>
+    <string name="forgot_password">Wachtwoord vergeten?</string>
+    <string name="reset_sent">Als er een account bestaat voor %1$s, krijg je een mail om je wachtwoord te herstellen.</string>
+
+    <!-- Register -->
+    <string name="register_title">Maak een account</string>
+    <string name="label_name">Naam</string>
+    <string name="label_email">E-mail</string>
+    <string name="label_password">Wachtwoord</string>
+    <string name="label_password_confirm">Herhaal wachtwoord</string>
+    <string name="show_password">Toon wachtwoord</string>
+    <string name="hide_password">Verberg wachtwoord</string>
+    <string name="label_role">Ik ben een…</string>
+    <string name="placeholder_name">Voor- en achternaam</string>
+    <string name="placeholder_email">naam@voorbeeld.be</string>
+    <string name="placeholder_password">Minstens 6 tekens</string>
+    <string name="role_customer">Klant</string>
+    <string name="role_customer_hint">Ik zoek pakketten</string>
+    <string name="role_merchant">Handelaar</string>
+    <string name="role_merchant_hint">Ik bied pakketten aan</string>
+
+    <!-- Errors -->
+    <string name="error_name_empty">Vul je naam in.</string>
+    <string name="error_email_empty">Vul je e-mailadres in.</string>
+    <string name="error_password_short">Je wachtwoord moet minstens 6 tekens hebben.</string>
+    <string name="error_password_mismatch">De twee wachtwoorden zijn niet gelijk.</string>
+    <string name="error_password_empty">Vul je wachtwoord in.</string>
+    <string name="error_login_failed">Inloggen is mislukt. Probeer het opnieuw.</string>
+    <string name="error_wrong_credentials">Dit e-mailadres en wachtwoord passen niet bij elkaar.</string>
+    <string name="error_email_in_use">Er bestaat al een account met dit e-mailadres.</string>
+    <string name="error_email_invalid">Dit is geen geldig e-mailadres.</string>
+    <string name="error_no_internet">Geen internet. Controleer je verbinding en probeer opnieuw.</string>
+    <string name="error_reset_failed">De mail kon niet verstuurd worden. Probeer het opnieuw.</string>
+    <string name="error_start_failed">Je gegevens konden niet geladen worden. Probeer opnieuw of log uit.</string>
+    <string name="error_register_failed">Registreren is mislukt. Probeer het opnieuw.</string>
+
+</resources>
