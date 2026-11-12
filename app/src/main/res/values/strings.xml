@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">SaveBite</string>
+
+    <string name="screen_login">Inloggen</string>
+    <string name="screen_register">Registreren</string>
+    <string name="screen_discover">Ontdekken</string>
+    <string name="screen_map">Kaart</string>
+    <string name="screen_orders">Bestellingen</string>
+    <string name="screen_favorites">Favorieten</string>
+    <string name="screen_my_bags">Mijn pakketten</string>
+    <string name="screen_my_store">Mijn winkel</string>
+
+    <string name="logout">Uitloggen</string>
+
+    <!-- Temporary until real login (step 6) -->
+    <string name="demo_customer">Demo: klant</string>
+    <string name="demo_merchant">Demo: handelaar</string>
 </resources>
