@@ -4,7 +4,9 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -14,6 +16,7 @@ import edu.ap.savebite.R
 import edu.ap.savebite.SaveBiteApplication
 import edu.ap.savebite.data.AuthRepository
 import edu.ap.savebite.data.BagRepository
+import edu.ap.savebite.data.QuantityBelowReservedException
 import edu.ap.savebite.data.StoreRepository
 import edu.ap.savebite.data.model.Bag
 import edu.ap.savebite.ui.authErrorMessage
@@ -27,8 +30,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.util.Calendar
+import java.util.Locale
 
 data class BagFormUiState(
+    /** True when an existing bag is edited (H7), false for a new bag. */
+    val isEditing: Boolean = false,
+    /** Loading the existing bag. */
+    val isLoading: Boolean = false,
+    /** Online or offline; only used when editing. */
+    val active: Boolean = true,
     // Text fields keep what is typed; they are checked when saving
     val title: String = "",
     val description: String = "",
@@ -57,15 +67,80 @@ data class BagFormUiState(
     val isSaved: Boolean = false,
 )
 
-/** Nieuw pakket: the form to offer a surprise bag (H3, H4). */
+/** Nieuw pakket or Pakket aanpassen: the form to offer or edit a surprise bag (H3, H4, H7). */
 class BagFormViewModel(
+    savedStateHandle: SavedStateHandle,
     private val authRepository: AuthRepository,
     private val storeRepository: StoreRepository,
     private val bagRepository: BagRepository,
     private val photoConverter: PhotoConverter,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(BagFormUiState())
+    /** The bag to edit, from the route "BagForm?bagId=…"; null for a new bag. */
+    private val bagId: String? = savedStateHandle[BAG_ID]
+
+    private val _uiState = MutableStateFlow(BagFormUiState(isEditing = bagId != null, isLoading = bagId != null))
     val uiState: StateFlow<BagFormUiState> = _uiState.asStateFlow()
+
+    init {
+        bagId?.let(::loadBag)
+    }
+
+    /** Fills the form with the existing bag (H7). */
+    private fun loadBag(id: String) {
+        viewModelScope.launch {
+            try {
+                val bag = bagRepository.getBag(id)
+                if (bag == null) {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = R.string.error_bag_load_failed) }
+                    return@launch
+                }
+                val photo = photoConverter.fromBase64(bag.photoBase64)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        active = bag.active,
+                        title = bag.title,
+                        description = bag.description,
+                        price = formatAmount(bag.price),
+                        originalValue = formatAmount(bag.originalValue),
+                        quantity = bag.quantityTotal.toString(),
+                        pickupStart = bag.pickupStart?.let(::minutesOfDay),
+                        pickupEnd = bag.pickupEnd?.let(::minutesOfDay),
+                        photo = photo,
+                        photoBase64 = bag.photoBase64.takeIf { photo != null },
+                    )
+                }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.w(TAG, "Loading the bag failed", e)
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = authErrorMessage(e, R.string.error_bag_load_failed))
+                }
+            }
+        }
+    }
+
+    /** Takes the bag offline or puts it back online (H7). Goes back to the list when done. */
+    fun toggleActive() {
+        val id = bagId ?: return
+        val state = _uiState.value
+        if (state.isSaving) return
+        _uiState.update { it.copy(isSaving = true, errorMessage = null) }
+        viewModelScope.launch {
+            try {
+                withTimeout(SAVE_TIMEOUT_MS) { bagRepository.setActive(id, !state.active) }
+                _uiState.update { it.copy(isSaving = false, active = !state.active, isSaved = true) }
+            } catch (e: TimeoutCancellationException) {
+                _uiState.update { it.copy(isSaving = false, errorMessage = R.string.error_bag_saved_offline) }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.w(TAG, "Changing online/offline failed", e)
+                _uiState.update {
+                    it.copy(isSaving = false, errorMessage = authErrorMessage(e, R.string.error_bag_save_failed))
+                }
+            }
+        }
+    }
 
     fun onTitleChange(value: String) = _uiState.update { it.copy(title = value, titleError = null) }
 
@@ -107,7 +182,7 @@ class BagFormViewModel(
 
     fun save() {
         val state = _uiState.value
-        if (state.isSaving || state.isProcessingPhoto) return
+        if (state.isSaving || state.isProcessingPhoto || state.isLoading) return
         val uid = authRepository.currentUid ?: return
 
         // Accept both 3,50 and 3.50
@@ -150,6 +225,12 @@ class BagFormViewModel(
         }
 
         _uiState.update { it.copy(isSaving = true, errorMessage = null) }
+
+        if (bagId != null) {
+            update(bagId, state, price!!, originalValue!!, quantity!!, start!!, end!!)
+            return
+        }
+
         viewModelScope.launch {
             try {
                 val store = storeRepository.getStore(uid)
@@ -188,6 +269,51 @@ class BagFormViewModel(
         }
     }
 
+    /** Saves the changes to an existing bag (H7). */
+    private fun update(
+        id: String, state: BagFormUiState, price: Double, originalValue: Double, quantity: Int, start: Int, end: Int
+    ) {
+        viewModelScope.launch {
+            try {
+                bagRepository.updateBag(
+                    bagId = id,
+                    title = state.title.trim(),
+                    description = state.description.trim(),
+                    price = price,
+                    originalValue = originalValue,
+                    quantityTotal = quantity,
+                    pickupStart = todayAt(start),
+                    pickupEnd = todayAt(end),
+                    photoBase64 = state.photoBase64!!,
+                )
+                _uiState.update { it.copy(isSaving = false, isSaved = true) }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                // Firestore may wrap the exception thrown inside the transaction
+                val belowReserved = e as? QuantityBelowReservedException
+                    ?: e.cause as? QuantityBelowReservedException
+                if (belowReserved != null) {
+                    _uiState.update {
+                        it.copy(isSaving = false, quantityError = R.string.error_bag_quantity_below_reserved)
+                    }
+                } else {
+                    Log.w(TAG, "Updating the bag failed", e)
+                    _uiState.update {
+                        it.copy(isSaving = false, errorMessage = authErrorMessage(e, R.string.error_bag_save_failed))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun minutesOfDay(timestamp: Timestamp): Int {
+        val calendar = Calendar.getInstance().apply { time = timestamp.toDate() }
+        return calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+    }
+
+    /** 3.5 → "3,50", as a Belgian merchant types it. */
+    private fun formatAmount(amount: Double) = String.format(Locale.forLanguageTag("nl-BE"), "%.2f", amount)
+
     /** Today at the given time (H3: the pickup window is always today). */
     private fun todayAt(minutes: Int): Timestamp {
         val calendar = Calendar.getInstance().apply {
@@ -203,10 +329,14 @@ class BagFormViewModel(
         private const val TAG = "BagFormViewModel"
         private const val SAVE_TIMEOUT_MS = 10_000L
 
+        /** Name of the route argument, see SaveBiteApp. */
+        const val BAG_ID = "bagId"
+
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as SaveBiteApplication).container
                 BagFormViewModel(
+                    createSavedStateHandle(),
                     container.authRepository,
                     container.storeRepository,
                     container.bagRepository,

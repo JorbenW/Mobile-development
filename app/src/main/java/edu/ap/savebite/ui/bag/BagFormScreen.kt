@@ -59,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.ap.savebite.R
 import edu.ap.savebite.ui.components.ErrorMessage
+import edu.ap.savebite.ui.components.InfoMessage
 import edu.ap.savebite.ui.components.SaveBiteButton
 import edu.ap.savebite.ui.components.SaveBiteSecondaryButton
 import edu.ap.savebite.ui.components.SaveBiteTextField
@@ -114,8 +115,19 @@ fun BagFormScreen(
             ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
-            Text(stringResource(R.string.screen_new_bag), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                stringResource(if (uiState.isEditing) R.string.screen_edit_bag else R.string.screen_new_bag),
+                style = MaterialTheme.typography.headlineSmall
+            )
         }
+
+        if (uiState.isLoading) {
+            Box(Modifier.fillMaxWidth().padding(48.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Tomato)
+            }
+            return@Column
+        }
+        if (uiState.isEditing && !uiState.active) InfoMessage(stringResource(R.string.bag_is_offline))
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             PhotoBox(uiState = uiState, onClick = {
@@ -213,11 +225,19 @@ fun BagFormScreen(
         uiState.errorMessage?.let { ErrorMessage(stringResource(it)) }
 
         SaveBiteButton(
-            text = stringResource(R.string.offer_bag),
+            text = stringResource(if (uiState.isEditing) R.string.save_changes else R.string.offer_bag),
             onClick = viewModel::save,
             isLoading = uiState.isSaving,
-            modifier = Modifier.padding(top = 6.dp, bottom = 16.dp)
+            modifier = Modifier.padding(top = 6.dp, bottom = if (uiState.isEditing) 4.dp else 16.dp)
         )
+        if (uiState.isEditing) {
+            SaveBiteSecondaryButton(
+                text = stringResource(if (uiState.active) R.string.take_offline else R.string.put_online),
+                onClick = viewModel::toggleActive,
+                enabled = !uiState.isSaving,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
     }
 
     when (openPicker) {

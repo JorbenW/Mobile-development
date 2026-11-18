@@ -116,6 +116,14 @@
     <string name="placeholder_bag_pickup_start">17:00</string>
     <string name="placeholder_bag_pickup_end">18:00</string>
     <string name="offer_bag">Pakket aanbieden</string>
+    <string name="screen_edit_bag">Pakket aanpassen</string>
+    <string name="save_changes">Wijzigingen opslaan</string>
+    <string name="take_offline">Offline halen</string>
+    <string name="put_online">Terug online zetten</string>
+    <string name="bag_is_offline">Dit pakket is offline: klanten zien het niet.</string>
+    <string name="edit_bag">Aanpassen</string>
+    <string name="error_bag_load_failed">Dit pakket kon niet geladen worden.</string>
+    <string name="error_bag_quantity_below_reserved">Er zijn al meer pakketten gereserveerd. Kies een hoger aantal.</string>
     <string name="ok">OK</string>
     <string name="cancel">Annuleren</string>
     <string name="error_bag_photo_empty">Voeg een foto toe.</string>

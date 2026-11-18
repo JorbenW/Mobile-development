@@ -48,7 +48,9 @@ import edu.ap.savebite.R
 import edu.ap.savebite.data.Role
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import android.net.Uri
 import edu.ap.savebite.ui.bag.BagFormScreen
+import edu.ap.savebite.ui.bag.BagFormViewModel
 import edu.ap.savebite.ui.bags.MyBagsScreen
 import edu.ap.savebite.ui.login.LoginScreen
 import edu.ap.savebite.ui.register.RegisterScreen
@@ -72,7 +74,7 @@ enum class SaveBiteScreen(@StringRes val title: Int, val icon: ImageVector? = nu
 }
 
 /** Route of the bag form, with the bag to edit as optional argument (H7). */
-private const val BAG_ID = "bagId"
+private const val BAG_ID = BagFormViewModel.BAG_ID
 private val bagFormRoute = "${SaveBiteScreen.BagForm.name}?$BAG_ID={$BAG_ID}"
 
 private val customerTabs = listOf(
@@ -155,6 +157,10 @@ fun SaveBiteApp(
             composable(SaveBiteScreen.MyBags.name) {
                 MyBagsScreen(
                     onNewBag = { navController.navigate(SaveBiteScreen.BagForm.name) },
+                    // Same form, with the bag to edit as argument (lab Navigation: route with argument)
+                    onEditBag = { bagId ->
+                        navController.navigate("${SaveBiteScreen.BagForm.name}?$BAG_ID=${Uri.encode(bagId)}")
+                    },
                     onGoToStore = {
                         navController.navigate(SaveBiteScreen.MyStore.name) {
                             popUpTo(SaveBiteScreen.MyBags.name)

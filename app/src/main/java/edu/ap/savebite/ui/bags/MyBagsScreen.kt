@@ -3,6 +3,8 @@ package edu.ap.savebite.ui.bags
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +53,7 @@ import edu.ap.savebite.ui.theme.Tomato
 @Composable
 fun MyBagsScreen(
     onNewBag: () -> Unit,
+    onEditBag: (bagId: String) -> Unit,
     onGoToStore: () -> Unit,
     viewModel: MyBagsViewModel = viewModel(factory = MyBagsViewModel.Factory)
 ) {
@@ -91,15 +94,15 @@ fun MyBagsScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // key: the list changes realtime, so Compose must know which row is which
-                items(uiState.bags, key = { it.id }) { bag -> BagRow(bag) }
+                items(uiState.bags, key = { it.id }) { bag -> BagRow(bag, onEdit = { onEditBag(bag.id) }) }
             }
         }
     }
 }
 
-/** One bag as a card, as in the wireframe (based on FruitItem in lab Fruits 2). */
+/** One bag as a card, as in the wireframe (based on FruitItem in lab Fruits 2: the event goes up). */
 @Composable
-private fun BagRow(bag: BagItem) {
+private fun BagRow(bag: BagItem, onEdit: () -> Unit) {
     val shape = MaterialTheme.shapes.large
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -130,6 +133,11 @@ private fun BagRow(bag: BagItem) {
                 Count(bag.reserved, stringResource(R.string.reserved))
                 Count(bag.left, stringResource(R.string.left))
             }
+            Text(
+                stringResource(R.string.edit_bag),
+                style = MaterialTheme.typography.labelLarge.copy(textDecoration = TextDecoration.Underline),
+                modifier = Modifier.clickable(onClick = onEdit).padding(vertical = 4.dp)
+            )
         }
     }
 }
