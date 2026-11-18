@@ -49,6 +49,7 @@ import edu.ap.savebite.data.Role
 import edu.ap.savebite.ui.login.LoginScreen
 import edu.ap.savebite.ui.register.RegisterScreen
 import edu.ap.savebite.ui.start.StartScreen
+import edu.ap.savebite.ui.store.MyStoreScreen
 import edu.ap.savebite.ui.theme.Cream
 import edu.ap.savebite.ui.theme.Ink
 import edu.ap.savebite.ui.theme.Mustard
@@ -138,8 +139,13 @@ fun SaveBiteApp(
                     }
                 )
             }
-            val formScreens = listOf(SaveBiteScreen.Start, SaveBiteScreen.Login, SaveBiteScreen.Register)
-            (SaveBiteScreen.entries - formScreens).forEach { screen ->
+            composable(SaveBiteScreen.MyStore.name) {
+                MyStoreScreen(onSaved = { navController.navigateAndClear(SaveBiteScreen.MyBags) })
+            }
+            val builtScreens = listOf(
+                SaveBiteScreen.Start, SaveBiteScreen.Login, SaveBiteScreen.Register, SaveBiteScreen.MyStore
+            )
+            (SaveBiteScreen.entries - builtScreens).forEach { screen ->
                 composable(screen.name) { PlaceholderScreen(screen) }
             }
         }

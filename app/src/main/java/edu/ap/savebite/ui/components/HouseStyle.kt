@@ -91,7 +91,9 @@ fun SaveBiteTextField(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    /** Shown in red below the field (lab OSM: isError + supportingText). */
+    errorMessage: String? = null
 ) {
     // Only the screen state, so it lives here and not in the ViewModel
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -127,12 +129,17 @@ fun SaveBiteTextField(
             } else {
                 null
             },
+            isError = errorMessage != null,
+            supportingText = errorMessage?.let { message -> { Text(message) } },
             shape = MaterialTheme.shapes.small,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White,
+                errorContainerColor = ErrorBackground,
                 focusedBorderColor = Tomato,
-                unfocusedBorderColor = Ink
+                unfocusedBorderColor = Ink,
+                errorBorderColor = Tomato,
+                errorSupportingTextColor = ErrorText
             ),
             modifier = Modifier.fillMaxWidth()
         )

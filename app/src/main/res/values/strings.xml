@@ -53,4 +53,32 @@
     <string name="error_start_failed">Je gegevens konden niet geladen worden. Probeer opnieuw of log uit.</string>
     <string name="error_register_failed">Registreren is mislukt. Probeer het opnieuw.</string>
 
+    <!-- Mijn winkel -->
+    <string name="label_store_name">Naam winkel</string>
+    <string name="label_store_category">Categorie</string>
+    <string name="label_store_address">Straat + huisnummer</string>
+    <string name="label_store_postal_code">Postcode</string>
+    <string name="label_store_city">Gemeente</string>
+    <string name="map_pin_hint">Tik of versleep de pin</string>
+    <string name="address_hint">Het adres wordt ingevuld zodra je de pin loslaat. Je kan het nog aanpassen.</string>
+    <string name="address_loading">Adres opzoeken…</string>
+    <string name="address_not_found">Op deze plek is geen adres gevonden. Vul het zelf in.</string>
+    <string name="address_no_street">Op deze plek is geen straat gevonden. Vul de straat en het huisnummer zelf in.</string>
+    <string name="save_store">Winkel opslaan</string>
+    <string name="category_baker">Bakker</string>
+    <string name="category_supermarket">Supermarkt</string>
+    <string name="category_restaurant">Restaurant</string>
+    <string name="category_caterer">Traiteur</string>
+    <string name="category_other">Andere</string>
+    <string name="error_store_name_empty">Vul de naam van je winkel in.</string>
+    <string name="error_store_pin">Zet een pin op de kaart.</string>
+    <string name="error_store_address_empty">Vul de straat en het huisnummer in.</string>
+    <string name="error_store_city_empty">Vul de gemeente in.</string>
+    <string name="error_address_no_internet">Geen internet: het adres kon niet opgezocht worden. Vul het zelf in.</string>
+    <string name="error_address_server">De adresdienst antwoordt niet. Vul het adres zelf in.</string>
+    <string name="error_address_failed">Het adres kon niet opgezocht worden. Vul het zelf in.</string>
+    <string name="error_store_load_failed">Je winkel kon niet geladen worden.</string>
+    <string name="error_store_save_failed">Je winkel kon niet opgeslagen worden. Probeer het opnieuw.</string>
+    <string name="error_store_saved_offline">Geen internet. Je winkel wordt opgeslagen zodra je weer verbinding hebt.</string>
+
 </resources>

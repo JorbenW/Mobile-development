@@ -39,7 +39,7 @@ class GeocodingRepository(
         val address = CachedAddress(
             key = key,
             displayName = result.displayName,
-            road = result.address?.road,
+            road = result.address?.street,
             houseNumber = result.address?.houseNumber,
             postcode = result.address?.postcode,
             city = result.address?.municipality,
