@@ -81,4 +81,43 @@
     <string name="error_store_save_failed">Je winkel kon niet opgeslagen worden. Probeer het opnieuw.</string>
     <string name="error_store_saved_offline">Geen internet. Je winkel wordt opgeslagen zodra je weer verbinding hebt.</string>
 
+    <!-- Nieuw pakket -->
+    <string name="screen_new_bag">Nieuw pakket</string>
+    <string name="new_bag">+ Nieuw pakket</string>
+    <string name="add_photo">+ foto</string>
+    <string name="bag_photo">Foto van het pakket</string>
+    <string name="photo_from_gallery">Kies uit galerij</string>
+    <string name="photo_from_camera">Neem een foto</string>
+    <string name="label_bag_title">Titel</string>
+    <string name="label_bag_description">Beschrijving</string>
+    <string name="label_bag_price">Prijs (€)</string>
+    <string name="label_bag_original_value">Originele waarde (€)</string>
+    <string name="label_bag_quantity">Aantal</string>
+    <string name="label_bag_pickup_start">Ophalen vanaf</string>
+    <string name="label_bag_pickup_end">Ophalen tot</string>
+    <string name="placeholder_bag_title">Verrassingspakket brood</string>
+    <string name="placeholder_bag_description">Wat zit er ongeveer in?</string>
+    <string name="placeholder_bag_price">3,99</string>
+    <string name="placeholder_bag_original_value">12,00</string>
+    <string name="placeholder_bag_quantity">5</string>
+    <string name="placeholder_bag_pickup_start">17:00</string>
+    <string name="placeholder_bag_pickup_end">18:00</string>
+    <string name="offer_bag">Pakket aanbieden</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Annuleren</string>
+    <string name="error_bag_photo_empty">Voeg een foto toe.</string>
+    <string name="error_bag_photo_failed">De foto kon niet gelezen worden. Kies een andere foto.</string>
+    <string name="error_bag_title_empty">Vul een titel in.</string>
+    <string name="error_bag_price_invalid">Vul een prijs hoger dan 0 in.</string>
+    <string name="error_bag_original_invalid">Vul de originele waarde in.</string>
+    <string name="error_bag_original_too_low">Moet hoger zijn dan de prijs.</string>
+    <string name="error_bag_quantity_invalid">Vul een aantal van minstens 1 in.</string>
+    <string name="error_bag_pickup_start_empty">Kies een beginuur.</string>
+    <string name="error_bag_pickup_end_empty">Kies een einduur.</string>
+    <string name="error_bag_pickup_end_before_start">Moet later zijn dan het beginuur.</string>
+    <string name="error_bag_pickup_past">Dit uur is vandaag al voorbij.</string>
+    <string name="error_bag_no_store">Maak eerst je winkel aan bij Mijn winkel.</string>
+    <string name="error_bag_save_failed">Je pakket kon niet opgeslagen worden. Probeer het opnieuw.</string>
+    <string name="error_bag_saved_offline">Geen internet. Je pakket wordt aangeboden zodra je weer verbinding hebt.</string>
+
 </resources>

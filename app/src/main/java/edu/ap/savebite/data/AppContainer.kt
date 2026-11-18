@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import edu.ap.savebite.data.local.AppDatabase
 import edu.ap.savebite.data.remote.RetrofitClient
+import edu.ap.savebite.util.PhotoConverter
 
 /** Creates the repositories once for the whole app (ADR 0002). */
 class AppContainer(context: Context) {
@@ -15,4 +16,6 @@ class AppContainer(context: Context) {
     val authRepository = AuthRepository(auth, firestore)
     val storeRepository = StoreRepository(firestore)
     val geocodingRepository = GeocodingRepository(RetrofitClient.nominatim, database.cachedAddressDao())
+    val bagRepository = BagRepository(firestore)
+    val photoConverter = PhotoConverter(context.contentResolver)
 }

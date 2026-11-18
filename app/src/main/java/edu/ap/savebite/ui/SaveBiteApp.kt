@@ -46,6 +46,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import edu.ap.savebite.R
 import edu.ap.savebite.data.Role
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import edu.ap.savebite.ui.bag.BagFormScreen
+import edu.ap.savebite.ui.bags.MyBagsScreen
 import edu.ap.savebite.ui.login.LoginScreen
 import edu.ap.savebite.ui.register.RegisterScreen
 import edu.ap.savebite.ui.start.StartScreen
@@ -63,8 +67,13 @@ enum class SaveBiteScreen(@StringRes val title: Int, val icon: ImageVector? = nu
     Orders(R.string.screen_orders, Icons.Filled.ShoppingCart),
     Favorites(R.string.screen_favorites, Icons.Filled.Favorite),
     MyBags(R.string.screen_my_bags, Icons.AutoMirrored.Filled.List),
-    MyStore(R.string.screen_my_store, Icons.Filled.Home)
+    MyStore(R.string.screen_my_store, Icons.Filled.Home),
+    BagForm(R.string.screen_new_bag)
 }
+
+/** Route of the bag form, with the bag to edit as optional argument (H7). */
+private const val BAG_ID = "bagId"
+private val bagFormRoute = "${SaveBiteScreen.BagForm.name}?$BAG_ID={$BAG_ID}"
 
 private val customerTabs = listOf(
     SaveBiteScreen.Discover, SaveBiteScreen.Map, SaveBiteScreen.Orders, SaveBiteScreen.Favorites
@@ -77,8 +86,9 @@ fun SaveBiteApp(
     appViewModel: AppViewModel = viewModel(factory = AppViewModel.Factory)
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
+    // A route can carry arguments after "?", e.g. "BagForm?bagId={bagId}"
     val current = SaveBiteScreen.valueOf(
-        backStackEntry?.destination?.route ?: SaveBiteScreen.Start.name
+        backStackEntry?.destination?.route?.substringBefore('?') ?: SaveBiteScreen.Start.name
     )
     val tabs = when (current) {
         in customerTabs -> customerTabs
@@ -142,8 +152,25 @@ fun SaveBiteApp(
             composable(SaveBiteScreen.MyStore.name) {
                 MyStoreScreen(onSaved = { navController.navigateAndClear(SaveBiteScreen.MyBags) })
             }
+            composable(SaveBiteScreen.MyBags.name) {
+                MyBagsScreen(onNewBag = { navController.navigate(SaveBiteScreen.BagForm.name) })
+            }
+            composable(
+                route = bagFormRoute,
+                arguments = listOf(navArgument(BAG_ID) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                })
+            ) {
+                BagFormScreen(
+                    onBack = { navController.navigateUp() },
+                    onSaved = { navController.popBackStack() }
+                )
+            }
             val builtScreens = listOf(
-                SaveBiteScreen.Start, SaveBiteScreen.Login, SaveBiteScreen.Register, SaveBiteScreen.MyStore
+                SaveBiteScreen.Start, SaveBiteScreen.Login, SaveBiteScreen.Register, SaveBiteScreen.MyStore,
+                SaveBiteScreen.MyBags, SaveBiteScreen.BagForm
             )
             (SaveBiteScreen.entries - builtScreens).forEach { screen ->
                 composable(screen.name) { PlaceholderScreen(screen) }
