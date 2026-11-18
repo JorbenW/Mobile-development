@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Same colors as ui/theme/Color.kt, for the XML theme and the splash screen -->
+    <color name="cream">#FFFFF6EC</color>
+    <color name="ink">#FF1F2A2E</color>
+    <color name="mustard">#FFF2B33D</color>
+</resources>
