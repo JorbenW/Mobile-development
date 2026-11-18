@@ -12,8 +12,23 @@ import androidx.compose.ui.unit.dp
 private val LightColorScheme = lightColorScheme(
     primary = Tomato,
     onPrimary = Color.White,
+    // The container colors are used by dialogs, menus and pickers;
+    // without them Material falls back on its default purple
+    primaryContainer = Mustard,
+    onPrimaryContainer = Ink,
     secondary = Mustard,
     onSecondary = Ink,
+    secondaryContainer = Mustard,
+    onSecondaryContainer = Ink,
+    tertiary = Mustard,
+    onTertiary = Ink,
+    tertiaryContainer = Mustard,
+    onTertiaryContainer = Ink,
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Cream,
+    surfaceContainer = Cream,
+    surfaceContainerHigh = Cream,
+    surfaceContainerHighest = CreamDark,
     background = Cream,
     onBackground = Ink,
     surface = Cream,
