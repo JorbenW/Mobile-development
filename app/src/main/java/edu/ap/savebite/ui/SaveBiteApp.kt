@@ -153,7 +153,15 @@ fun SaveBiteApp(
                 MyStoreScreen(onSaved = { navController.navigateAndClear(SaveBiteScreen.MyBags) })
             }
             composable(SaveBiteScreen.MyBags.name) {
-                MyBagsScreen(onNewBag = { navController.navigate(SaveBiteScreen.BagForm.name) })
+                MyBagsScreen(
+                    onNewBag = { navController.navigate(SaveBiteScreen.BagForm.name) },
+                    onGoToStore = {
+                        navController.navigate(SaveBiteScreen.MyStore.name) {
+                            popUpTo(SaveBiteScreen.MyBags.name)
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
             composable(
                 route = bagFormRoute,

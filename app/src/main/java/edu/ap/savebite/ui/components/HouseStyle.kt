@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -173,6 +174,21 @@ fun SaveBiteTextField(
             modifier = Modifier.fillMaxWidth()
         )
     }
+}
+
+/** Small pill with a status, e.g. "Actief" on a bag. */
+@Composable
+fun StatusBadge(text: String, background: Color, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        color = Ink,
+        style = MaterialTheme.typography.labelSmall,
+        maxLines = 1,
+        modifier = modifier
+            .background(background, CircleShape)
+            .border(2.dp, Ink, CircleShape)
+            .padding(horizontal = 10.dp, vertical = 2.dp)
+    )
 }
 
 /** Neutral confirmation box below a form. */

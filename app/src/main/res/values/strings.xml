@@ -81,6 +81,19 @@
     <string name="error_store_save_failed">Je winkel kon niet opgeslagen worden. Probeer het opnieuw.</string>
     <string name="error_store_saved_offline">Geen internet. Je winkel wordt opgeslagen zodra je weer verbinding hebt.</string>
 
+    <!-- Mijn pakketten -->
+    <string name="status_active">Actief</string>
+    <string name="status_sold_out">Uitverkocht</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_ended">Voorbij</string>
+    <string name="pickup_window">Ophalen %1$s</string>
+    <string name="reserved">gereserveerd</string>
+    <string name="left">over</string>
+    <string name="no_bags_yet">Je hebt nog geen pakketten. Maak er een aan met de knop hierboven.</string>
+    <string name="no_store_yet">Je hebt nog geen winkel. Vul eerst je winkel in, daarna kan je pakketten aanbieden.</string>
+    <string name="go_to_my_store">Naar Mijn winkel</string>
+    <string name="error_bags_load_failed">Je pakketten konden niet geladen worden.</string>
+
     <!-- Nieuw pakket -->
     <string name="screen_new_bag">Nieuw pakket</string>
     <string name="new_bag">+ Nieuw pakket</string>
