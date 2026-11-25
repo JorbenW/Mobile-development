@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
     id("com.google.gms.google-services")
 }
 
@@ -55,4 +56,19 @@ dependencies {
     implementation(libs.firebase.firestore)
     // await() on Firebase Tasks
     implementation(libs.kotlinx.coroutines.play.services)
+    // collectAsStateWithLifecycle (lab OSM)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    // Map (lab OSM)
+    implementation(libs.osmdroid.android)
+    // Nominatim reverse geocoding (lab OSM)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    // Local database (lab Room)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    // Camera permission (lab Permissions)
+    implementation(libs.accompanist.permissions)
+    // Current location of the device (FusedLocationProviderClient)
+    implementation(libs.play.services.location)
 }

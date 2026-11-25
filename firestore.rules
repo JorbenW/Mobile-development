@@ -2,21 +2,77 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMerchant() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'merchant';
+    }
+
     // Profile of a user: only the owner reads and writes it,
     // so nobody can list the names and e-mails of other users.
     // The role is chosen once at registration and can never change.
     match /users/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow create: if request.auth != null && request.auth.uid == uid
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid
                     && request.resource.data.role in ['customer', 'merchant'];
-      allow update: if request.auth != null && request.auth.uid == uid
+      allow update: if signedIn() && request.auth.uid == uid
                     && request.resource.data.role == resource.data.role;
     }
 
-    // Store of a merchant, at stores/{uid} (ADR 0004).
-    // Write rules come with Mijn winkel (H1).
-    match /stores/{uid} {
-      allow read: if request.auth != null;
+    // Store of a merchant, at stores/{uid} (ADR 0004): one store per merchant.
+    match /stores/{storeId} {
+      function validStore(d) {
+        return d.ownerId == request.auth.uid
+            && d.name is string && d.name.size() > 0
+            && d.category in ['Bakker', 'Supermarkt', 'Restaurant', 'Traiteur', 'Andere']
+            && d.location is latlng
+            && d.address is string && d.address.size() > 0
+            && d.city is string && d.city.size() > 0;
+      }
+
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == storeId
+                             && isMerchant()
+                             && validStore(request.resource.data);
+    }
+
+    // Surprise bag of a store. storeName and location are copied from the store.
+    match /bags/{bagId} {
+      function validBag(d) {
+        return d.storeName is string
+            && d.location is latlng
+            && d.title is string && d.title.size() > 0
+            && d.description is string
+            && d.price is number && d.price > 0
+            && d.originalValue is number && d.originalValue > d.price
+            && d.quantityTotal is int && d.quantityTotal >= 1
+            && d.quantityLeft is int && d.quantityLeft >= 0
+            && d.quantityLeft <= d.quantityTotal
+            && d.pickupStart is timestamp && d.pickupEnd is timestamp
+            && d.pickupEnd > d.pickupStart
+            && d.active is bool
+            && d.photoBase64 is string && d.photoBase64.size() > 0;
+      }
+
+      allow read: if signedIn();
+
+      // Only a merchant with a store creates bags, for his own store.
+      allow create: if signedIn()
+                    && request.resource.data.storeId == request.auth.uid
+                    && exists(/databases/$(database)/documents/stores/$(request.auth.uid))
+                    && validBag(request.resource.data)
+                    && request.resource.data.quantityLeft == request.resource.data.quantityTotal;
+
+      // The owner edits his bag or takes it offline (H7).
+      // Week 4 adds a second update rule so a customer can lower quantityLeft.
+      allow update: if signedIn()
+                    && resource.data.storeId == request.auth.uid
+                    && request.resource.data.storeId == resource.data.storeId
+                    && validBag(request.resource.data);
+
+      // No delete: a bag is taken offline instead (active = false).
     }
   }
 }

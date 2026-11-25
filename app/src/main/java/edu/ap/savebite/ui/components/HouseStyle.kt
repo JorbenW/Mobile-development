@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -82,6 +83,31 @@ fun SaveBiteButton(
     }
 }
 
+/** Secondary white button with a smaller hard shadow, e.g. "Kies uit galerij". */
+@Composable
+fun SaveBiteSecondaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        shape = MaterialTheme.shapes.small,
+        border = BorderStroke(2.dp, Ink),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = Ink,
+            disabledContainerColor = Color.White,
+            disabledContentColor = Ink.copy(alpha = 0.4f)
+        ),
+        modifier = modifier.fillMaxWidth().height(42.dp).hardShadow(offset = 3.dp, cornerRadius = 12.dp)
+    ) {
+        Text(text, style = MaterialTheme.typography.labelLarge)
+    }
+}
+
 /** Text field with the label above the box, as in the wireframes. */
 @Composable
 fun SaveBiteTextField(
@@ -91,7 +117,12 @@ fun SaveBiteTextField(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    /** Shown in red below the field (lab OSM: isError + supportingText). */
+    errorMessage: String? = null,
+    /** False for a longer text such as a description. */
+    singleLine: Boolean = true,
+    minLines: Int = 1
 ) {
     // Only the screen state, so it lives here and not in the ViewModel
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -101,7 +132,8 @@ fun SaveBiteTextField(
             value = value,
             onValueChange = onValueChange,
             placeholder = { Text(placeholder) },
-            singleLine = true,
+            singleLine = singleLine,
+            minLines = minLines,
             keyboardOptions = keyboardOptions,
             visualTransformation = if (isPassword && !passwordVisible) {
                 PasswordVisualTransformation()
@@ -127,16 +159,36 @@ fun SaveBiteTextField(
             } else {
                 null
             },
+            isError = errorMessage != null,
+            supportingText = errorMessage?.let { message -> { Text(message) } },
             shape = MaterialTheme.shapes.small,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White,
+                errorContainerColor = ErrorBackground,
                 focusedBorderColor = Tomato,
-                unfocusedBorderColor = Ink
+                unfocusedBorderColor = Ink,
+                errorBorderColor = Tomato,
+                errorSupportingTextColor = ErrorText
             ),
             modifier = Modifier.fillMaxWidth()
         )
     }
+}
+
+/** Small pill with a status, e.g. "Actief" on a bag. */
+@Composable
+fun StatusBadge(text: String, background: Color, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        color = Ink,
+        style = MaterialTheme.typography.labelSmall,
+        maxLines = 1,
+        modifier = modifier
+            .background(background, CircleShape)
+            .border(2.dp, Ink, CircleShape)
+            .padding(horizontal = 10.dp, vertical = 2.dp)
+    )
 }
 
 /** Neutral confirmation box below a form. */
