@@ -14,9 +14,15 @@ class QuantityBelowReservedException(val reserved: Int) : Exception()
 class BagRepository(private val firestore: FirebaseFirestore) {
     private val bags = firestore.collection("bags")
 
-    /** Creates a new bag with an id chosen by Firestore. */
-    suspend fun createBag(bag: Bag) {
-        bags.document().set(bag).await()
+    /** A new, unused document id for a bag. */
+    fun newBagId(): String = bags.document().id
+
+    /**
+     * Saves a new bag under [bagId]. Saving again with the same id overwrites it,
+     * so tapping the button twice (e.g. without internet) never makes two bags.
+     */
+    suspend fun createBag(bagId: String, bag: Bag) {
+        bags.document(bagId).set(bag).await()
     }
 
     suspend fun getBag(bagId: String): Bag? =

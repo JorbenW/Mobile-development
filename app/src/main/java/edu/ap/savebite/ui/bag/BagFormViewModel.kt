@@ -78,6 +78,12 @@ class BagFormViewModel(
     /** The bag to edit, from the route "BagForm?bagId=…"; null for a new bag. */
     private val bagId: String? = savedStateHandle[BAG_ID]
 
+    /**
+     * Id for a new bag, chosen once. Without internet Firestore keeps the write in a queue;
+     * when the merchant taps "Pakket aanbieden" again, the same document is written, not a second one.
+     */
+    private val newBagId: String by lazy { bagRepository.newBagId() }
+
     private val _uiState = MutableStateFlow(BagFormUiState(isEditing = bagId != null, isLoading = bagId != null))
     val uiState: StateFlow<BagFormUiState> = _uiState.asStateFlow()
 
@@ -255,7 +261,7 @@ class BagFormViewModel(
                     photoBase64 = state.photoBase64!!,
                 )
                 // Offline, Firestore keeps the write and never answers: do not wait forever
-                withTimeout(SAVE_TIMEOUT_MS) { bagRepository.createBag(bag) }
+                withTimeout(SAVE_TIMEOUT_MS) { bagRepository.createBag(newBagId, bag) }
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
             } catch (e: TimeoutCancellationException) {
                 _uiState.update { it.copy(isSaving = false, errorMessage = R.string.error_bag_saved_offline) }
