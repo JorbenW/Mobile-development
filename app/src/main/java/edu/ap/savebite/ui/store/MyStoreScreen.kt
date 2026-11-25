@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -49,6 +50,7 @@ import edu.ap.savebite.ui.components.ErrorMessage
 import edu.ap.savebite.ui.components.InfoMessage
 import edu.ap.savebite.ui.components.OsmMap
 import edu.ap.savebite.ui.components.SaveBiteButton
+import edu.ap.savebite.ui.components.SaveBiteSecondaryButton
 import edu.ap.savebite.ui.components.SaveBiteTextField
 import edu.ap.savebite.ui.theme.ErrorText
 import edu.ap.savebite.ui.theme.Ink
@@ -63,6 +65,8 @@ fun MyStoreScreen(
     viewModel: MyStoreViewModel = viewModel(factory = MyStoreViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // Hide the keyboard before searching, so the map with the pin is visible (lab OSM)
+    val keyboard = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) onSaved()
@@ -146,6 +150,15 @@ fun MyStoreScreen(
                 modifier = Modifier.weight(1f)
             )
         }
+        // The other way around: put the pin on the address the merchant typed
+        SaveBiteSecondaryButton(
+            text = stringResource(R.string.search_address_on_map),
+            onClick = {
+                keyboard?.hide()
+                viewModel.onSearchAddress()
+            },
+            enabled = !uiState.isLoadingAddress
+        )
 
         uiState.errorMessage?.let { ErrorMessage(stringResource(it)) }
 

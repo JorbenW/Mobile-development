@@ -4,8 +4,9 @@ import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Query
 
-/** Reverse geocoding with Nominatim (based on lab OSM, `search` changed to `reverse`). */
+/** Geocoding with Nominatim (based on lab OSM). */
 interface NominatimService {
+    /** Coordinates → address, when the merchant places the pin (H2). */
     // Nominatim requires a User-Agent that identifies the app
     @Headers("User-Agent: edu.ap.savebite/1.0 (Android student project)")
     @GET("reverse")
@@ -18,4 +19,15 @@ interface NominatimService {
         @Query("addressdetails") addressDetails: Int = 1,
         @Query("accept-language") language: String = "nl",
     ): ReverseResult
+
+    /** Address → coordinates, when the merchant types the address himself (as `getAddress` in lab OSM). */
+    @Headers("User-Agent: edu.ap.savebite/1.0 (Android student project)")
+    @GET("search")
+    suspend fun search(
+        @Query("q") query: String,
+        @Query("format") format: String = "json",
+        @Query("limit") limit: Int = 1,
+        // Only addresses in Belgium, so "Meir 1" does not end up abroad
+        @Query("countrycodes") countryCodes: String = "be",
+    ): List<SearchResult>
 }

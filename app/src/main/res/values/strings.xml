@@ -60,10 +60,14 @@
     <string name="label_store_postal_code">Postcode</string>
     <string name="label_store_city">Gemeente</string>
     <string name="map_pin_hint">Tik of versleep de pin</string>
-    <string name="address_hint">Het adres wordt ingevuld zodra je de pin loslaat. Je kan het nog aanpassen.</string>
+    <string name="address_hint">Het adres wordt ingevuld zodra je de pin loslaat. Je kan het ook zelf typen en op de kaart opzoeken.</string>
     <string name="address_loading">Adres opzoeken…</string>
     <string name="address_not_found">Op deze plek is geen adres gevonden. Vul het zelf in.</string>
     <string name="address_no_street">Op deze plek is geen straat gevonden. Vul de straat en het huisnummer zelf in.</string>
+    <string name="search_address_on_map">Zoek adres op de kaart</string>
+    <string name="address_search_not_found">Dit adres is niet gevonden. Controleer het, of zet de pin zelf op de kaart.</string>
+    <string name="error_address_search_no_internet">Geen internet: het adres kon niet op de kaart gezet worden. Zet de pin zelf.</string>
+    <string name="error_address_search_failed">Het adres kon niet op de kaart gezet worden. Zet de pin zelf.</string>
     <string name="save_store">Winkel opslaan</string>
     <string name="category_baker">Bakker</string>
     <string name="category_supermarket">Supermarkt</string>

@@ -154,6 +154,45 @@ class MyStoreViewModel(
         }
     }
 
+    /** The merchant typed the address himself: put the pin there (the other way around than [onPinMoved]). */
+    fun onSearchAddress() {
+        val state = _uiState.value
+        if (state.address.isBlank() || state.city.isBlank()) {
+            _uiState.update {
+                it.copy(
+                    addressError = if (state.address.isBlank()) R.string.error_store_address_empty else null,
+                    cityError = if (state.city.isBlank()) R.string.error_store_city_empty else null,
+                )
+            }
+            return
+        }
+        val query = "${state.address.trim()}, ${state.postalCode.trim()} ${state.city.trim()}"
+
+        _uiState.update { it.copy(isLoadingAddress = true, addressMessage = null) }
+        addressJob?.cancel()
+        addressJob = viewModelScope.launch {
+            try {
+                val found = geocodingRepository.search(query)
+                _uiState.update {
+                    if (found == null) {
+                        it.copy(isLoadingAddress = false, addressMessage = R.string.address_search_not_found)
+                    } else {
+                        // Only the pin moves; the address stays as the merchant typed it
+                        it.copy(lat = found.lat, lon = found.lon, pinError = null, isLoadingAddress = false)
+                    }
+                }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                val message = when (e) {
+                    is HttpException -> R.string.error_address_server
+                    is IOException -> R.string.error_address_search_no_internet
+                    else -> R.string.error_address_search_failed
+                }
+                _uiState.update { it.copy(isLoadingAddress = false, addressMessage = message) }
+            }
+        }
+    }
+
     fun save() {
         val state = _uiState.value
         if (state.isSaving) return
