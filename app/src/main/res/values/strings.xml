@@ -105,6 +105,10 @@
     <string name="bag_photo">Foto van het pakket</string>
     <string name="photo_from_gallery">Kies uit galerij</string>
     <string name="photo_from_camera">Neem een foto</string>
+    <string name="camera_permission_rationale">Om een foto te nemen heeft SaveBite toegang tot je camera nodig. Je kan ook een foto uit je galerij kiezen.</string>
+    <string name="camera_permission_ask_again">Toegang tot camera geven</string>
+    <string name="camera_permission_denied_forever">De toegang tot de camera is geweigerd. Zet ze aan in de instellingen van de app, of kies een foto uit je galerij.</string>
+    <string name="open_settings">Open instellingen</string>
     <string name="label_bag_title">Titel</string>
     <string name="label_bag_description">Beschrijving</string>
     <string name="label_bag_price">Prijs (€)</string>

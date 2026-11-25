@@ -67,4 +67,6 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    // Camera permission (lab Permissions)
+    implementation(libs.accompanist.permissions)
 }

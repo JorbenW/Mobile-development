@@ -5,6 +5,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- osmdroid checks the network state before downloading map tiles (lab OSM) -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Photo of a bag with the camera (H4); asked only when the merchant taps "Neem een foto" -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Not required: without a camera the merchant still picks a photo from the gallery -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:name=".SaveBiteApplication"

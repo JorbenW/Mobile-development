@@ -1,5 +1,9 @@
 package edu.ap.savebite.ui.bag
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,6 +55,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -59,6 +64,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.Calendar
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import edu.ap.savebite.R
 import edu.ap.savebite.ui.components.ErrorMessage
 import edu.ap.savebite.ui.components.InfoMessage
@@ -75,6 +84,7 @@ import edu.ap.savebite.ui.theme.Tomato
 private enum class PickupField { START, END }
 
 /** Nieuw pakket (H3, H4): form with photo, prices, quantity and pickup window. */
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun BagFormScreen(
     onBack: () -> Unit,
@@ -88,13 +98,32 @@ fun BagFormScreen(
     }
 
     // The launchers only hand the result to the ViewModel; the photo is processed there.
-    // No permission needed for either of them.
     val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let(viewModel::onPhotoPicked)
     }
     val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
         bitmap?.let(viewModel::onPhotoTaken)
     }
+
+    // Camera permission (lab Permissions, with Accompanist). Asked only after a tap on "Neem een foto".
+    // True while the system dialog is open, so no message shows before the merchant answered.
+    var waitingForCameraAnswer by rememberSaveable { mutableStateOf(false) }
+    // True once the merchant was asked; only then a refusal gets a message
+    var cameraAsked by rememberSaveable { mutableStateOf(false) }
+    val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA) { granted ->
+        waitingForCameraAnswer = false
+        if (granted) takePhoto.launch(null)
+    }
+    val onTakePhoto = {
+        if (cameraPermission.status.isGranted) {
+            takePhoto.launch(null)
+        } else {
+            cameraAsked = true
+            waitingForCameraAnswer = true
+            cameraPermission.launchPermissionRequest()
+        }
+    }
+    val context = LocalContext.current
 
     // Only the screen state, so it lives here and not in the ViewModel
     var openPicker by rememberSaveable { mutableStateOf<PickupField?>(null) }
@@ -144,12 +173,37 @@ fun BagFormScreen(
                 )
                 SaveBiteSecondaryButton(
                     text = stringResource(R.string.photo_from_camera),
-                    onClick = { takePhoto.launch(null) },
+                    onClick = onTakePhoto,
                     enabled = !uiState.isProcessingPhoto
                 )
             }
         }
         uiState.photoError?.let { FieldError(stringResource(it)) }
+
+        // Refused: explain and ask again. Refused for good: only the app settings can still allow it.
+        if (cameraAsked && !waitingForCameraAnswer && !cameraPermission.status.isGranted) {
+            if (cameraPermission.status.shouldShowRationale) {
+                InfoMessage(stringResource(R.string.camera_permission_rationale))
+                SaveBiteSecondaryButton(
+                    text = stringResource(R.string.camera_permission_ask_again),
+                    onClick = onTakePhoto
+                )
+            } else {
+                InfoMessage(stringResource(R.string.camera_permission_denied_forever))
+                SaveBiteSecondaryButton(
+                    text = stringResource(R.string.open_settings),
+                    onClick = {
+                        // Intent to the settings of this app (link "Intents")
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", context.packageName, null)
+                            )
+                        )
+                    }
+                )
+            }
+        }
 
         SaveBiteTextField(
             label = stringResource(R.string.label_bag_title),
