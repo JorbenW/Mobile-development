@@ -113,8 +113,6 @@
     <string name="placeholder_bag_price">3,99</string>
     <string name="placeholder_bag_original_value">12,00</string>
     <string name="placeholder_bag_quantity">5</string>
-    <string name="placeholder_bag_pickup_start">17:00</string>
-    <string name="placeholder_bag_pickup_end">18:00</string>
     <string name="offer_bag">Pakket aanbieden</string>
     <string name="screen_edit_bag">Pakket aanpassen</string>
     <string name="save_changes">Wijzigingen opslaan</string>
@@ -125,6 +123,8 @@
     <string name="error_bag_load_failed">Dit pakket kon niet geladen worden.</string>
     <string name="error_bag_quantity_below_reserved">Er zijn al meer pakketten gereserveerd. Kies een hoger aantal.</string>
     <string name="ok">OK</string>
+    <string name="time_hour">Uur</string>
+    <string name="time_minutes">Minuten</string>
     <string name="cancel">Annuleren</string>
     <string name="error_bag_photo_empty">Voeg een foto toe.</string>
     <string name="error_bag_photo_failed">De foto kon niet gelezen worden. Kies een andere foto.</string>

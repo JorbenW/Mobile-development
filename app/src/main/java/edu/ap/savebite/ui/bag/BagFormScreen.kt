@@ -11,6 +11,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,17 +28,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.util.Calendar
 import edu.ap.savebite.R
 import edu.ap.savebite.ui.components.ErrorMessage
 import edu.ap.savebite.ui.components.InfoMessage
@@ -66,8 +67,8 @@ import edu.ap.savebite.ui.components.SaveBiteTextField
 import edu.ap.savebite.ui.theme.ErrorBackground
 import edu.ap.savebite.ui.theme.ErrorText
 import edu.ap.savebite.ui.theme.Ink
+import edu.ap.savebite.ui.theme.Mustard
 import edu.ap.savebite.ui.theme.PhotoPeach
-import edu.ap.savebite.ui.theme.Slate
 import edu.ap.savebite.ui.theme.Tomato
 
 /** Which time picker is open. */
@@ -207,7 +208,6 @@ fun BagFormScreen(
             TimeField(
                 label = stringResource(R.string.label_bag_pickup_start),
                 minutes = uiState.pickupStart,
-                placeholder = stringResource(R.string.placeholder_bag_pickup_start),
                 errorMessage = uiState.pickupStartError?.let { stringResource(it) },
                 onClick = { openPicker = PickupField.START },
                 modifier = Modifier.weight(1f)
@@ -215,7 +215,6 @@ fun BagFormScreen(
             TimeField(
                 label = stringResource(R.string.label_bag_pickup_end),
                 minutes = uiState.pickupEnd,
-                placeholder = stringResource(R.string.placeholder_bag_pickup_end),
                 errorMessage = uiState.pickupEndError?.let { stringResource(it) },
                 onClick = { openPicker = PickupField.END },
                 modifier = Modifier.weight(1f)
@@ -241,13 +240,15 @@ fun BagFormScreen(
     }
 
     when (openPicker) {
+        // Without a time yet, the picker starts at the next 5 minutes from now, the end one hour later
         PickupField.START -> TimePickerDialog(
-            initialMinutes = uiState.pickupStart ?: (17 * 60),
+            initialMinutes = uiState.pickupStart ?: nextFiveMinutes(),
             onConfirm = { viewModel.onPickupStartChange(it); openPicker = null },
             onDismiss = { openPicker = null }
         )
         PickupField.END -> TimePickerDialog(
-            initialMinutes = uiState.pickupEnd ?: ((uiState.pickupStart ?: (17 * 60)) + 60).coerceAtMost(23 * 60 + 59),
+            initialMinutes = uiState.pickupEnd
+                ?: ((uiState.pickupStart ?: nextFiveMinutes()) + 60).coerceAtMost(LAST_TIME),
             onConfirm = { viewModel.onPickupEndChange(it); openPicker = null },
             onDismiss = { openPicker = null }
         )
@@ -291,12 +292,11 @@ private fun PhotoBox(uiState: BagFormUiState, onClick: () -> Unit) {
     }
 }
 
-/** Looks like a text field, but opens a time picker instead of the keyboard. */
+/** Looks like a text field, but opens a time picker instead of the keyboard. Empty until a time is chosen. */
 @Composable
 private fun TimeField(
     label: String,
     minutes: Int?,
-    placeholder: String,
     errorMessage: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -316,9 +316,9 @@ private fun TimeField(
                 .padding(horizontal = 16.dp)
         ) {
             Text(
-                text = minutes?.let(::formatTime) ?: placeholder,
+                text = minutes?.let(::formatTime).orEmpty(),
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (minutes != null) Ink else Slate
+                color = Ink
             )
         }
         errorMessage?.let { FieldError(it, Modifier.padding(start = 16.dp, top = 4.dp)) }
@@ -330,26 +330,77 @@ private fun FieldError(text: String, modifier: Modifier = Modifier) {
     Text(text, color = ErrorText, style = MaterialTheme.typography.bodySmall, modifier = modifier)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Time picker with a button per hour and per 5 minutes.
+ * The Material 3 TimePicker cannot step the minutes by 5, so this one is our own.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TimePickerDialog(initialMinutes: Int, onConfirm: (Int) -> Unit, onDismiss: () -> Unit) {
-    val state = rememberTimePickerState(
-        initialHour = initialMinutes / 60,
-        initialMinute = initialMinutes % 60,
-        is24Hour = true
-    )
+    // Only the dialog state; it survives a rotation
+    var hour by rememberSaveable { mutableIntStateOf(initialMinutes / 60) }
+    var minute by rememberSaveable { mutableIntStateOf(initialMinutes % 60 / MINUTE_STEP * MINUTE_STEP) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onConfirm(state.hour * 60 + state.minute) }) {
+            TextButton(onClick = { onConfirm(hour * 60 + minute) }) {
                 Text(stringResource(R.string.ok), color = Ink)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = Ink) }
         },
-        text = { TimePicker(state = state) }
+        title = { Text(formatTime(hour * 60 + minute), style = MaterialTheme.typography.headlineMedium) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.time_hour), style = MaterialTheme.typography.labelMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    (0..23).forEach { h -> TimeChip("%02d".format(h), selected = h == hour) { hour = h } }
+                }
+                Text(
+                    stringResource(R.string.time_minutes),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    (0 until 60 step MINUTE_STEP).forEach { m ->
+                        TimeChip("%02d".format(m), selected = m == minute) { minute = m }
+                    }
+                }
+            }
+        }
     )
+}
+
+/** One hour or minute in the time picker; the chosen one is mustard. */
+@Composable
+private fun TimeChip(text: String, selected: Boolean, onClick: () -> Unit) {
+    val shape = MaterialTheme.shapes.small
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(width = 44.dp, height = 36.dp)
+            .clip(shape)
+            .background(if (selected) Mustard else Color.White)
+            .border(if (selected) 2.dp else 1.dp, Ink, shape)
+            .clickable(onClick = onClick)
+    ) {
+        Text(text, style = MaterialTheme.typography.labelLarge, color = Ink)
+    }
+}
+
+/** Minutes can be chosen per 5. */
+private const val MINUTE_STEP = 5
+
+/** 23:55, the last time that can be chosen. */
+private const val LAST_TIME = 23 * 60 + 55
+
+/** Now, rounded up to the next 5 minutes, e.g. 14:02 → 14:05. */
+private fun nextFiveMinutes(): Int {
+    val now = Calendar.getInstance()
+    val minutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+    return ((minutes + MINUTE_STEP - 1) / MINUTE_STEP * MINUTE_STEP).coerceAtMost(LAST_TIME)
 }
 
 private fun formatTime(minutes: Int) = "%02d:%02d".format(minutes / 60, minutes % 60)
