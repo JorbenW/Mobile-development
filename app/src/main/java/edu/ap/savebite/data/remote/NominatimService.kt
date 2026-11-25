@@ -27,6 +27,8 @@ interface NominatimService {
         @Query("q") query: String,
         @Query("format") format: String = "json",
         @Query("limit") limit: Int = 1,
+        // Also the address parts, so the postcode can be filled in
+        @Query("addressdetails") addressDetails: Int = 1,
         // Only addresses in Belgium, so "Meir 1" does not end up abroad
         @Query("countrycodes") countryCodes: String = "be",
     ): List<SearchResult>

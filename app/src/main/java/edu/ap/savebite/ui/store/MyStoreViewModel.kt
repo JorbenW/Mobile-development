@@ -166,7 +166,11 @@ class MyStoreViewModel(
             }
             return
         }
-        val query = "${state.address.trim()}, ${state.postalCode.trim()} ${state.city.trim()}"
+        // The postcode is optional: "Meir 1, Antwerpen" is enough
+        val query = listOf(state.address, "${state.postalCode} ${state.city}")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .joinToString(", ")
 
         _uiState.update { it.copy(isLoadingAddress = true, addressMessage = null) }
         addressJob?.cancel()
@@ -177,8 +181,15 @@ class MyStoreViewModel(
                     if (found == null) {
                         it.copy(isLoadingAddress = false, addressMessage = R.string.address_search_not_found)
                     } else {
-                        // Only the pin moves; the address stays as the merchant typed it
-                        it.copy(lat = found.lat, lon = found.lon, pinError = null, isLoadingAddress = false)
+                        // The pin moves and the postcode comes from Nominatim;
+                        // street and municipality stay as the merchant typed them
+                        it.copy(
+                            lat = found.lat,
+                            lon = found.lon,
+                            postalCode = found.address?.postcode ?: it.postalCode,
+                            pinError = null,
+                            isLoadingAddress = false,
+                        )
                     }
                 }
             } catch (e: Exception) {
