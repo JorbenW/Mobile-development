@@ -11,8 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,10 +31,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -67,7 +68,6 @@ import edu.ap.savebite.ui.components.SaveBiteTextField
 import edu.ap.savebite.ui.theme.ErrorBackground
 import edu.ap.savebite.ui.theme.ErrorText
 import edu.ap.savebite.ui.theme.Ink
-import edu.ap.savebite.ui.theme.Mustard
 import edu.ap.savebite.ui.theme.PhotoPeach
 import edu.ap.savebite.ui.theme.Tomato
 
@@ -331,67 +331,44 @@ private fun FieldError(text: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * Time picker with a button per hour and per 5 minutes.
- * The Material 3 TimePicker cannot step the minutes by 5, so this one is our own.
+ * The Material 3 clock, with the minutes per 5.
+ * The clock itself has no step, so every minute the merchant picks is moved to the nearest 5.
  */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TimePickerDialog(initialMinutes: Int, onConfirm: (Int) -> Unit, onDismiss: () -> Unit) {
-    // Only the dialog state; it survives a rotation
-    var hour by rememberSaveable { mutableIntStateOf(initialMinutes / 60) }
-    var minute by rememberSaveable { mutableIntStateOf(initialMinutes % 60 / MINUTE_STEP * MINUTE_STEP) }
-
+    val state = rememberTimePickerState(
+        initialHour = initialMinutes / 60,
+        initialMinute = roundToStep(initialMinutes % 60),
+        is24Hour = true
+    )
+    // While dragging the hand, it jumps to 00, 05, 10 …
+    LaunchedEffect(state) {
+        snapshotFlow { state.minute }.collect { minute ->
+            val rounded = roundToStep(minute)
+            if (rounded != minute) state.minute = rounded
+        }
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onConfirm(hour * 60 + minute) }) {
+            TextButton(onClick = { onConfirm(state.hour * 60 + roundToStep(state.minute)) }) {
                 Text(stringResource(R.string.ok), color = Ink)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = Ink) }
         },
-        title = { Text(formatTime(hour * 60 + minute), style = MaterialTheme.typography.headlineMedium) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.time_hour), style = MaterialTheme.typography.labelMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    (0..23).forEach { h -> TimeChip("%02d".format(h), selected = h == hour) { hour = h } }
-                }
-                Text(
-                    stringResource(R.string.time_minutes),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    (0 until 60 step MINUTE_STEP).forEach { m ->
-                        TimeChip("%02d".format(m), selected = m == minute) { minute = m }
-                    }
-                }
-            }
-        }
+        text = { TimePicker(state = state) }
     )
-}
-
-/** One hour or minute in the time picker; the chosen one is mustard. */
-@Composable
-private fun TimeChip(text: String, selected: Boolean, onClick: () -> Unit) {
-    val shape = MaterialTheme.shapes.small
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(width = 44.dp, height = 36.dp)
-            .clip(shape)
-            .background(if (selected) Mustard else Color.White)
-            .border(if (selected) 2.dp else 1.dp, Ink, shape)
-            .clickable(onClick = onClick)
-    ) {
-        Text(text, style = MaterialTheme.typography.labelLarge, color = Ink)
-    }
 }
 
 /** Minutes can be chosen per 5. */
 private const val MINUTE_STEP = 5
+
+/** The nearest multiple of 5, at most 55: 13 → 15, 58 → 55. */
+private fun roundToStep(minute: Int) =
+    ((minute + MINUTE_STEP / 2) / MINUTE_STEP * MINUTE_STEP).coerceAtMost(60 - MINUTE_STEP)
 
 /** 23:55, the last time that can be chosen. */
 private const val LAST_TIME = 23 * 60 + 55

@@ -123,8 +123,6 @@
     <string name="error_bag_load_failed">Dit pakket kon niet geladen worden.</string>
     <string name="error_bag_quantity_below_reserved">Er zijn al meer pakketten gereserveerd. Kies een hoger aantal.</string>
     <string name="ok">OK</string>
-    <string name="time_hour">Uur</string>
-    <string name="time_minutes">Minuten</string>
     <string name="cancel">Annuleren</string>
     <string name="error_bag_photo_empty">Voeg een foto toe.</string>
     <string name="error_bag_photo_failed">De foto kon niet gelezen worden. Kies een andere foto.</string>
