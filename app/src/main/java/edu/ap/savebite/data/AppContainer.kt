@@ -18,4 +18,5 @@ class AppContainer(context: Context) {
     val geocodingRepository = GeocodingRepository(RetrofitClient.nominatim, database.cachedAddressDao())
     val bagRepository = BagRepository(firestore)
     val photoConverter = PhotoConverter(context.contentResolver)
+    val locationRepository = LocationRepository(context)
 }

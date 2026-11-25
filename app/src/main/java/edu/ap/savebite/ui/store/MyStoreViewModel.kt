@@ -12,6 +12,7 @@ import edu.ap.savebite.R
 import edu.ap.savebite.SaveBiteApplication
 import edu.ap.savebite.data.AuthRepository
 import edu.ap.savebite.data.GeocodingRepository
+import edu.ap.savebite.data.LocationRepository
 import edu.ap.savebite.data.StoreRepository
 import edu.ap.savebite.data.model.Store
 import edu.ap.savebite.data.model.StoreCategory
@@ -61,6 +62,7 @@ class MyStoreViewModel(
     private val authRepository: AuthRepository,
     private val storeRepository: StoreRepository,
     private val geocodingRepository: GeocodingRepository,
+    private val locationRepository: LocationRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MyStoreUiState())
     val uiState: StateFlow<MyStoreUiState> = _uiState.asStateFlow()
@@ -150,6 +152,34 @@ class MyStoreViewModel(
                     else -> R.string.error_address_failed
                 }
                 _uiState.update { it.copy(isLoadingAddress = false, addressMessage = message) }
+            }
+        }
+    }
+
+    /**
+     * Puts the pin on the current location of the device. Only called once the permission is there;
+     * then [onPinMoved] fills in the address, just as when the merchant taps the map.
+     */
+    fun onUseMyLocation() {
+        _uiState.update { it.copy(isLoadingAddress = true, addressMessage = null) }
+        addressJob?.cancel()
+        addressJob = viewModelScope.launch {
+            try {
+                // The device may need a moment to find its position, but not forever
+                val location = withTimeout(LOCATION_TIMEOUT_MS) { locationRepository.currentLocation() }
+                if (location == null) {
+                    _uiState.update {
+                        it.copy(isLoadingAddress = false, addressMessage = R.string.error_location_unavailable)
+                    }
+                } else {
+                    onPinMoved(location.latitude, location.longitude)
+                }
+            } catch (e: TimeoutCancellationException) {
+                _uiState.update { it.copy(isLoadingAddress = false, addressMessage = R.string.error_location_unavailable) }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.w(TAG, "Getting the location failed", e)
+                _uiState.update { it.copy(isLoadingAddress = false, addressMessage = R.string.error_location_unavailable) }
             }
         }
     }
@@ -251,11 +281,17 @@ class MyStoreViewModel(
     companion object {
         private const val TAG = "MyStoreViewModel"
         private const val SAVE_TIMEOUT_MS = 10_000L
+        private const val LOCATION_TIMEOUT_MS = 15_000L
 
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as SaveBiteApplication).container
-                MyStoreViewModel(container.authRepository, container.storeRepository, container.geocodingRepository)
+                MyStoreViewModel(
+                    container.authRepository,
+                    container.storeRepository,
+                    container.geocodingRepository,
+                    container.locationRepository
+                )
             }
         }
     }

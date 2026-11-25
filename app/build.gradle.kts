@@ -69,4 +69,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     // Camera permission (lab Permissions)
     implementation(libs.accompanist.permissions)
+    // Current location of the device (FusedLocationProviderClient)
+    implementation(libs.play.services.location)
 }

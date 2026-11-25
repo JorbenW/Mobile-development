@@ -68,6 +68,15 @@
     <string name="address_search_not_found">Dit adres is niet gevonden. Controleer het, of zet de pin zelf op de kaart.</string>
     <string name="error_address_search_no_internet">Geen internet: het adres kon niet op de kaart gezet worden. Zet de pin zelf.</string>
     <string name="error_address_search_failed">Het adres kon niet op de kaart gezet worden. Zet de pin zelf.</string>
+    <string name="use_my_location">Gebruik mijn huidige locatie</string>
+    <string name="location_permission_explain">Om de pin op je huidige plek te zetten, heeft SaveBite toegang tot je locatie nodig. Je locatie wordt alleen gebruikt om de pin te zetten.</string>
+    <string name="location_permission_allow">Locatie toestaan</string>
+    <string name="location_permission_rationale">Zonder toegang tot je locatie kan SaveBite je huidige plek niet vinden. Je kan de pin ook zelf zetten of het adres opzoeken.</string>
+    <string name="location_permission_ask_again">Toegang tot locatie geven</string>
+    <string name="location_permission_denied_forever">De toegang tot je locatie is geweigerd. Zet ze aan in de instellingen van de app, of zet de pin zelf.</string>
+    <string name="location_approximate_only">Je deelt alleen je benaderde locatie. De pin kan daardoor een eind naast je winkel staan. Controleer hem of sta je precieze locatie toe.</string>
+    <string name="location_allow_precise">Precieze locatie toestaan</string>
+    <string name="error_location_unavailable">Je locatie kon niet bepaald worden. Zet de locatie van je toestel aan, of zet de pin zelf.</string>
     <string name="save_store">Winkel opslaan</string>
     <string name="category_baker">Bakker</string>
     <string name="category_supermarket">Supermarkt</string>

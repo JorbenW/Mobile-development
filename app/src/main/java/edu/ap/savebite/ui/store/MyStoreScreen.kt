@@ -51,6 +51,7 @@ import edu.ap.savebite.ui.components.InfoMessage
 import edu.ap.savebite.ui.components.OsmMap
 import edu.ap.savebite.ui.components.SaveBiteButton
 import edu.ap.savebite.ui.components.SaveBiteSecondaryButton
+import edu.ap.savebite.ui.components.UseMyLocationButton
 import edu.ap.savebite.ui.components.SaveBiteTextField
 import edu.ap.savebite.ui.theme.ErrorText
 import edu.ap.savebite.ui.theme.Ink
@@ -115,6 +116,11 @@ fun MyStoreScreen(
         uiState.pinError?.let {
             Text(stringResource(it), color = ErrorText, style = MaterialTheme.typography.bodySmall)
         }
+        // A third way to set the pin, next to tapping the map and searching the address
+        UseMyLocationButton(
+            onLocationAllowed = viewModel::onUseMyLocation,
+            enabled = !uiState.isLoadingAddress
+        )
 
         if (uiState.isLoadingAddress) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
