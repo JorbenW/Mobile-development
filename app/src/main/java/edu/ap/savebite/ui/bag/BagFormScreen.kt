@@ -1,9 +1,6 @@
 package edu.ap.savebite.ui.bag
 
 import android.Manifest
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -55,7 +52,6 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -71,6 +67,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 import edu.ap.savebite.R
 import edu.ap.savebite.ui.components.ErrorMessage
 import edu.ap.savebite.ui.components.InfoMessage
+import edu.ap.savebite.ui.components.PermissionRefused
 import edu.ap.savebite.ui.components.SaveBiteButton
 import edu.ap.savebite.ui.components.SaveBiteSecondaryButton
 import edu.ap.savebite.ui.components.SaveBiteTextField
@@ -123,7 +120,6 @@ fun BagFormScreen(
             cameraPermission.launchPermissionRequest()
         }
     }
-    val context = LocalContext.current
 
     // Only the screen state, so it lives here and not in the ViewModel
     var openPicker by rememberSaveable { mutableStateOf<PickupField?>(null) }
@@ -182,27 +178,13 @@ fun BagFormScreen(
 
         // Refused: explain and ask again. Refused for good: only the app settings can still allow it.
         if (cameraAsked && !waitingForCameraAnswer && !cameraPermission.status.isGranted) {
-            if (cameraPermission.status.shouldShowRationale) {
-                InfoMessage(stringResource(R.string.camera_permission_rationale))
-                SaveBiteSecondaryButton(
-                    text = stringResource(R.string.camera_permission_ask_again),
-                    onClick = onTakePhoto
-                )
-            } else {
-                InfoMessage(stringResource(R.string.camera_permission_denied_forever))
-                SaveBiteSecondaryButton(
-                    text = stringResource(R.string.open_settings),
-                    onClick = {
-                        // Intent to the settings of this app (link "Intents")
-                        context.startActivity(
-                            Intent(
-                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                Uri.fromParts("package", context.packageName, null)
-                            )
-                        )
-                    }
-                )
-            }
+            PermissionRefused(
+                shouldShowRationale = cameraPermission.status.shouldShowRationale,
+                rationale = stringResource(R.string.camera_permission_rationale),
+                askAgainText = stringResource(R.string.camera_permission_ask_again),
+                onAskAgain = onTakePhoto,
+                deniedForever = stringResource(R.string.camera_permission_denied_forever),
+            )
         }
 
         SaveBiteTextField(
